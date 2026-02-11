@@ -1,12 +1,15 @@
-// socket.js
 const { Server } = require("socket.io");
 
 let io;
 
-const initSocket = (server) => {
+function initSocket(server) {
   io = new Server(server, {
     cors: {
-      origin: process.env.CORS_ORIGIN || "*",
+      origin: [
+        "http://localhost:5173",
+        "https://poll-creator-fronted.vercel.app"
+      ],
+      credentials: true,
       methods: ["GET", "POST"]
     }
   });
@@ -14,19 +17,24 @@ const initSocket = (server) => {
   io.on("connection", (socket) => {
     console.log("🔌 User connected:", socket.id);
 
-    // Join poll room
     socket.on("join-poll", (pollId) => {
       socket.join(`poll-${pollId}`);
+    });
+
+    socket.on("leave-poll", (pollId) => {
+      socket.leave(`poll-${pollId}`);
     });
 
     socket.on("disconnect", () => {
       console.log("❌ User disconnected:", socket.id);
     });
   });
-};
+}
 
-// Function to emit updates from controller
-const getIO = () => io;
+function getIO() {
+  if (!io) throw new Error("Socket not initialized");
+  return io;
+}
 
 module.exports = initSocket;
 module.exports.getIO = getIO;

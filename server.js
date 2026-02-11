@@ -11,41 +11,34 @@ const initSocket = require("./socket");
 const app = express();
 const server = http.createServer(app);
 
-// 🔌 Connect to MongoDB
+// 🔌 Connect DB
 connectDB();
 
-
-// 🌐 CORS CONFIG (WORKS FOR LOCAL + VERCEL)
+// 🌐 CORS FOR API
 const allowedOrigins = [
   "http://localhost:5173",
   "https://poll-creator-fronted.vercel.app"
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  origin: allowedOrigins,
+  credentials: true
 }));
 
-
-
 app.use(express.json());
+
+// 🛣 Routes
 app.use("/api/polls", pollRoutes);
 
+// Health check
 app.get("/", (req, res) => {
   res.send("Poll Creator API running 🚀");
 });
 
-
+// ⚡ Init Socket
 initSocket(server);
 
-
+// 🚀 Start
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
